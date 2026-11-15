@@ -9,6 +9,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 const PAD = 1.5, GAP = 0.3, STEP = PAD + GAP;
 const FONT = '"Orbitron", "Segoe UI", system-ui, sans-serif';
+const LABEL_FONT = '"Rajdhani", "Arial Narrow", "Segoe UI", system-ui, sans-serif';
 
 function glowTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64;
@@ -20,18 +21,18 @@ function glowTexture() {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 
-function fitFont(g, text, maxW, size, weight = 800) {
+function fitFont(g, text, maxW, size, weight = 800, font = FONT) {
   let s = size;
-  do { g.font = `${weight} ${s}px ${FONT}`; s -= 2; } while (g.measureText(text).width > maxW && s > 10);
+  do { g.font = `${weight} ${s}px ${font}`; s -= 2; } while (g.measureText(text).width > maxW && s > 10);
 }
 
 export class Visuals {
   constructor(canvas, pads) {
     this.pads = pads;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
+    this.renderer.toneMappingExposure = 0.9;
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x030109);
@@ -77,7 +78,7 @@ export class Visuals {
           float g = max(grid(p.x), grid(p.y));
           float fade = exp(-abs(vW.z - 6.) * .022) * smoothstep(40., 8., abs(vW.x));
           vec3 col = mix(uB, uA, smoothstep(-90., 10., vW.z));
-          gl_FragColor = vec4(col * g * fade * (.55 + uPulse * .8), 1.);
+          gl_FragColor = vec4(col * g * fade * (.32 + uPulse * .35), 1.);
         }`,
     });
     Object.assign(this.floorMat, { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
@@ -99,8 +100,8 @@ export class Visuals {
           float core = smoothstep(.5, 0., r);
           float ring = smoothstep(.02, 0., abs(r - .18 - uPulse * .03));
           vec3 col = mix(uA, uB, .5 + .5 * sin(a * 2. + uTime * .5));
-          float i = core * core * (.35 + .25 * swirl) + ring * .8;
-          gl_FragColor = vec4(col * i * (1. + uPulse), 1.);
+          float i = core * core * (.18 + .12 * swirl) + ring * .4;
+          gl_FragColor = vec4(col * i * (1. + uPulse * .5), 1.);
         }`,
     });
     const portal = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), this.portalMat);
@@ -141,36 +142,36 @@ export class Visuals {
     this.scene.add(new THREE.Points(sg, this.starMat));
   }
 
-  _labelCanvas(p, energy = 0) {
+  _labelCanvas(p) {
     const c = p.canvas || (p.canvas = document.createElement('canvas'));
-    c.width = c.height = 256;
+    c.width = c.height = 512;
     const g = c.getContext('2d');
+    g.setTransform(2, 0, 0, 2, 0, 0);
     g.clearRect(0, 0, 256, 256);
     const col = '#' + p.color.getHexString();
-    g.save();
-    g.shadowColor = col; g.shadowBlur = 18;
-    g.strokeStyle = col; g.lineWidth = 7;
+    // fondo oscuro para que el texto contraste
+    g.fillStyle = 'rgba(4, 4, 14, 0.82)';
+    g.beginPath(); g.roundRect(14, 14, 228, 228, 26); g.fill();
+    g.strokeStyle = col; g.lineWidth = 6;
     g.beginPath(); g.roundRect(14, 14, 228, 228, 26); g.stroke();
-    g.lineWidth = 2; g.globalAlpha = 0.5;
-    g.beginPath(); g.roundRect(30, 30, 196, 196, 16); g.stroke();
-    g.restore();
-    // texto
+    g.lineWidth = 1.5; g.globalAlpha = 0.35;
+    g.beginPath(); g.roundRect(28, 28, 200, 200, 16); g.stroke();
+    g.globalAlpha = 1;
+    // texto nítido: sin sombra difusa, con contorno oscuro fino
     const words = p.label.toUpperCase().split(' ');
-    g.fillStyle = '#ffffff'; g.shadowColor = col; g.shadowBlur = 14;
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    if (words.length > 1) {
-      fitFont(g, words.reduce((a, b) => a.length > b.length ? a : b), 190, 40);
-      g.fillText(words[0], 128, 108); g.fillText(words.slice(1).join(' '), 128, 152);
-    } else {
-      fitFont(g, words[0], 190, 44);
-      g.fillText(words[0], 128, 130);
-    }
+    g.fillStyle = '#ffffff'; g.strokeStyle = 'rgba(0,0,0,0.9)'; g.lineWidth = 4; g.lineJoin = 'round';
+    const lines = words.length > 1 ? [words[0], words.slice(1).join(' ')] : words;
+    fitFont(g, lines.reduce((a, b) => a.length > b.length ? a : b), 196, lines.length > 1 ? 58 : 64, 700, LABEL_FONT);
+    const lh = parseInt(g.font.match(/(\d+)px/)[1]) * 0.95;
+    const y0 = 128 - (lines.length - 1) * lh / 2;
+    lines.forEach((l, k) => { g.strokeText(l, 128, y0 + k * lh); g.fillText(l, 128, y0 + k * lh); });
     if (this.showKeys && p.keyLabel) {
-      g.shadowBlur = 0; g.font = `700 24px ${FONT}`; g.fillStyle = col;
-      g.textAlign = 'right'; g.fillText(p.keyLabel, 222, 216);
+      g.font = `700 26px ${LABEL_FONT}`; g.fillStyle = col;
+      g.textAlign = 'right'; g.textBaseline = 'alphabetic'; g.fillText(p.keyLabel, 224, 226);
     }
-    g.textAlign = 'left'; g.font = `600 18px ${FONT}`; g.fillStyle = col; g.globalAlpha = 0.7;
-    g.fillText(String(p.n).padStart(2, '0'), 40, 46);
+    g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.font = `600 20px ${LABEL_FONT}`; g.fillStyle = col; g.globalAlpha = 0.75;
+    g.fillText(String(p.n).padStart(2, '0'), 34, 50);
     return c;
   }
 
@@ -193,8 +194,8 @@ export class Visuals {
       const mat = new THREE.MeshStandardMaterial({ color: 0x0b0b1a, metalness: 0.7, roughness: 0.3, emissive: color, emissiveIntensity: 0.12 });
       const m = new THREE.Mesh(body, mat);
       const tex = new THREE.CanvasTexture(this._labelCanvas(o));
-      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-      const fm = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending });
+      tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+      const fm = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false });
       const f = new THREE.Mesh(face, fm); f.position.z = 0.17;
       g.add(m, f);
       m.userData.pad = i; f.userData.pad = i;
@@ -230,7 +231,7 @@ export class Visuals {
       fragmentShader: `uniform vec3 uColor; uniform float uFlash; varying vec3 vN; varying vec3 vV; varying float vD;
         void main(){
           float fr = pow(1. - max(dot(vN, vV), 0.), 2.2);
-          vec3 c = uColor * (fr * 1.6 + .08 + vD * 1.2) + vec3(.6) * uFlash * fr;
+          vec3 c = uColor * (fr * 1.1 + .05 + vD * .8) + vec3(.4) * uFlash * fr;
           gl_FragColor = vec4(c, 1.); }`,
     });
     this.coreBall = new THREE.Mesh(new THREE.IcosahedronGeometry(0.85, 24), this.coreMat);
@@ -304,7 +305,7 @@ export class Visuals {
     const r = this.renderer;
     this.composer = new EffectComposer(r);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.8, 0.5, 0.35);
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.55, 0.35, 0.82);
     this.composer.addPass(this.bloom);
     this.finalPass = new ShaderPass({
       uniforms: { tDiffuse: { value: null }, uAmount: { value: 0 }, uTime: { value: 0 } },
@@ -312,11 +313,11 @@ export class Visuals {
       fragmentShader: `uniform sampler2D tDiffuse; uniform float uAmount, uTime; varying vec2 vUv;
         void main(){
           vec2 d = vUv - .5; float r = dot(d, d);
-          vec2 off = d * (uAmount + .002) * (.5 + r * 3.);
+          vec2 off = d * uAmount * (.5 + r * 3.);
           vec3 c = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
           c *= 1. - r * 1.1;
-          c *= .95 + .05 * sin(vUv.y * 900.);
-          c += (fract(sin(dot(vUv + fract(uTime), vec2(12.9898, 78.233))) * 43758.5453) - .5) * .025;
+          c *= .985 + .015 * sin(vUv.y * 900.);
+          c += (fract(sin(dot(vUv + fract(uTime), vec2(12.9898, 78.233))) * 43758.5453) - .5) * .012;
           gl_FragColor = vec4(c, 1.); }`,
     });
     this.composer.addPass(this.finalPass);
@@ -416,7 +417,7 @@ export class Visuals {
       const v = new THREE.Vector3(Math.cos(a) * s, Math.sin(a) * s, 0).applyQuaternion(q).addScaledVector(n, 2 + Math.random() * 5);
       this.pPos.set([wp.x + n.x * 0.2, wp.y + n.y * 0.2, wp.z + n.z * 0.2], j * 3);
       this.pVel.set([v.x, v.y, v.z], j * 3);
-      const c = o.color.clone().lerp(new THREE.Color(1, 1, 1), Math.random() * 0.5).multiplyScalar(1.4);
+      const c = o.color.clone().lerp(new THREE.Color(1, 1, 1), Math.random() * 0.5).multiplyScalar(1.1);
       this.pBase.set([c.r, c.g, c.b], j * 3);
       this.pLife[j] = 0.6 + Math.random() * 0.7;
     }
@@ -424,18 +425,18 @@ export class Visuals {
     const w = this.waves.find(m => !m.visible) || this.waves[0];
     w.visible = true; w.userData.life = 1;
     w.position.copy(wp).addScaledVector(n, 0.2); w.quaternion.copy(q);
-    w.material.color.copy(o.color).multiplyScalar(1.4);
+    w.material.color.copy(o.color).multiplyScalar(0.9);
     // palabra
     if (strength >= 0.8) {
       const s = this.words.find(m => !m.visible) || this.words[0];
       s.material.map = this._wordTexture(o); s.material.needsUpdate = true;
       s.visible = true; s.userData.life = 1;
-      s.position.copy(wp).addScaledVector(n, 0.8);
-      s.userData.vel.set((Math.random() - 0.5) * 1.5, 1.6 + Math.random(), 0).addScaledVector(n, 3.5);
+      s.position.copy(wp).addScaledVector(n, 1.2); s.position.y += 0.9;
+      s.userData.vel.set((Math.random() - 0.5) * 1.5, 2.6 + Math.random(), 0).addScaledVector(n, 4);
     }
     this.coreColor.copy(o.color);
     this.coreMat.uniforms.uFlash.value = 1;
-    this.chroma = Math.min(this.chroma + 0.006 * strength, 0.02);
+    this.chroma = Math.min(this.chroma + 0.002 * strength, 0.006);
     this.shake = Math.min(this.shake + 0.08 * strength, 0.25);
     (o.bank ? this.lightB : this.lightA).userData.kick = 1;
   }
@@ -450,7 +451,7 @@ export class Visuals {
       m.visible = true;
       m.position.z = 0.2;
       m.scale.setScalar((PAD / 2) * 1.42 * (1 + it.t * 1.6));
-      m.material.color.copy(o.color).lerp(new THREE.Color(1, 1, 1), 0.4).multiplyScalar(1.5 + (1 - it.t) * 2);
+      m.material.color.copy(o.color).lerp(new THREE.Color(1, 1, 1), 0.4).multiplyScalar(0.9 + (1 - it.t) * 0.6);
       m.material.opacity = Math.min(1, (1 - it.t) * 2.5);
       o.target = Math.max(o.target, 1 - it.t);
     });
@@ -483,7 +484,7 @@ export class Visuals {
       m.rotation.z += dt * 0.05 * (k % 2 ? 1 : -1);
       const f = THREE.MathUtils.smoothstep(z, -150, -40) * THREE.MathUtils.smoothstep(-z, -12, 0);
       c.setHSL((0.5 + k * 0.035 + t * 0.03) % 1, 1, 0.55);
-      m.material.color.copy(c).multiplyScalar(0.5 + beatPulse * 0.9);
+      m.material.color.copy(c).multiplyScalar(0.3 + beatPulse * 0.4);
       m.material.opacity = f;
       m.scale.setScalar(1 + beatPulse * 0.03);
     });
@@ -495,8 +496,8 @@ export class Visuals {
       const e = o.energy, tg = o.target;
       o.group.position.z = -e * 0.22 + o.hoverE * 0.12 + tg * 0.1;
       o.group.scale.setScalar(1 + e * 0.06 + tg * 0.05);
-      o.mat.emissiveIntensity = 0.08 + e * 0.9 + o.hoverE * 0.2 + tg * 0.5 + beatPulse * 0.03;
-      o.faceMat.color.setScalar(0.8 + e * 1.6 + o.hoverE * 0.4 + tg * 1.0);
+      o.mat.emissiveIntensity = 0.05 + e * 0.6 + o.hoverE * 0.15 + tg * 0.35;
+      o.faceMat.color.setScalar(0.78 + e * 0.9 + o.hoverE * 0.1 + tg * 0.5);
       o.target = 0;
     });
     this.banks.forEach((b, bi) => {
@@ -515,11 +516,11 @@ export class Visuals {
     cu.uFlash.value *= Math.exp(-dt * 5);
     cu.uColor.value.lerp(this.coreColor, Math.min(1, dt * 4));
     this.coreWire.rotation.x += dt * 0.3; this.coreWire.rotation.y += dt * 0.45;
-    this.coreWire.material.color.copy(cu.uColor.value).multiplyScalar(0.9 + beatPulse * 0.5);
+    this.coreWire.material.color.copy(cu.uColor.value).multiplyScalar(0.6 + beatPulse * 0.4);
     this.coreWire.scale.setScalar(1 + beatPulse * 0.08 + s.bass * 0.15);
     this.beatRing.scale.setScalar(1 + beatPulse * 0.1);
     this.beatRing.material.opacity = 0.25 + beatPulse * 0.75;
-    this.beatRing.material.color.copy(cu.uColor.value).multiplyScalar(1.3);
+    this.beatRing.material.color.copy(cu.uColor.value).multiplyScalar(0.9);
     this.beatRing.rotation.x = Math.sin(t * 0.7) * 0.4; this.beatRing.rotation.y = Math.cos(t * 0.5) * 0.4;
 
     // partículas
@@ -553,8 +554,8 @@ export class Visuals {
       s2.position.addScaledVector(s2.userData.vel, dt);
       s2.userData.vel.multiplyScalar(Math.exp(-dt * 1.5));
       s2.scale.set(3.2, 0.8, 1).multiplyScalar(0.7 + (1 - l) * 0.9);
-      s2.material.opacity = Math.min(1, l * 1.6);
-      s2.material.color.setScalar(1.1);
+      s2.material.opacity = Math.min(0.75, l * 1.2);
+      s2.material.color.setScalar(0.9);
     });
 
     // cámara
@@ -566,9 +567,9 @@ export class Visuals {
       this.camBase.y + this.parallax.y * 0.5 + (Math.random() - 0.5) * this.shake,
       this.camBase.z - beatPulse * 0.12 - s.bass * 0.3);
     cam.lookAt(this.camTarget);
-    this.finalPass.uniforms.uAmount.value = this.chroma + s.bass * 0.003;
+    this.finalPass.uniforms.uAmount.value = this.chroma;
     this.finalPass.uniforms.uTime.value = t;
-    this.bloom.strength = 0.75 + s.level * 0.3 + beatPulse * 0.08;
+    this.bloom.strength = 0.5 + s.level * 0.15;
 
     this.composer.render(dt);
   }

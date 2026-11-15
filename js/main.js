@@ -30,7 +30,7 @@ async function boot() {
   const cfg = await (await fetch('js/pads.json')).json();
   PADS = cfg.pads.map((p, i) => ({ ...p, keyLabel: keyName(KEYS[i]) }));
 
-  try { await document.fonts?.load('800 40px Orbitron'); } catch (_) {}
+  try { await Promise.all(['800 40px Orbitron', '700 40px Rajdhani', '600 20px Rajdhani'].map(f => document.fonts?.load(f))); } catch (_) {}
   visuals = new Visuals($('#scene'), PADS);
   requestAnimationFrame(loop);
   window.addEventListener('resize', () => visuals.resize());
