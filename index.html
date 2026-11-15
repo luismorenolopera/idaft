@@ -1,107 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Daft Punk</title>
-	<link rel="stylesheet" href="css/estilo.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>iDaft · Otra dimensión</title>
+  <meta name="description" content="Launchpad 3D: toca samples con el teclado, el ratón o la pantalla táctil.">
+  <meta name="theme-color" content="#030109">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": {
+        "three": "./vendor/three/three.module.min.js",
+        "three/addons/": "./vendor/three/addons/"
+    } }
+  </script>
 </head>
 <body>
-	<div id="fila1" class="fila">
-		<button class="boton botona" onclick="document.getElementById('workit').play()">work it</button>
-		<botton class="boton botona" onclick="document.getElementById('makeit').play()">make it</botton>
-		<botton class="boton botona" onclick="document.getElementById('doit').play()">do it</botton>
-		<botton class="boton botona" onclick="document.getElementById('makeus').play()">make us</botton>
-	</div>
-	<div id="fila2" class="fila">
-		<button class="boton botona" onclick="document.getElementById('harder').play()">harder</button>
-		<botton class="boton botona" onclick="document.getElementById('faster').play()">better</botton>
-		<botton class="boton botona" onclick="document.getElementById('better').play()">faster</botton>
-		<botton class="boton botona" onclick="document.getElementById('stronger').play()">stronger</botton>
-	</div>
-	<div id="fila3" class="fila">
-		<button class="boton botona" onclick="document.getElementById('more').play()">more than</button>
-		<botton class="boton botona" onclick="document.getElementById('hour').play()">hour</botton>
-		<botton class="boton botona" onclick="document.getElementById('our').play()">our</botton>
-		<botton class="boton botona" onclick="document.getElementById('never').play()">never</botton>
-	</div>
-	<div id="fila4" class="fila">
-		<button class="boton botona" onclick="document.getElementById('ever').play()">ever</button>
-		<botton class="boton botona" onclick="document.getElementById('after').play()">after</botton>
-		<botton class="boton botona" onclick="document.getElementById('workis').play()">work is</botton>
-		<botton class="boton botona" onclick="document.getElementById('over').play()">over</botton>
-	</div>
+  <canvas id="scene"></canvas>
 
-	<div id="fila5" class="fila">
-		<button class="boton botonb" onclick="document.getElementById('workit2').play()">work it</button>
-		<botton class="boton botonb" onclick="document.getElementById('makeit2').play()">make it</botton>
-		<botton class="boton botonb" onclick="document.getElementById('doit2').play()">do it</botton>
-		<botton class="boton botonb" onclick="document.getElementById('makeus2').play()">make us</botton>
-	</div>
-	<div id="fila6" class="fila">
-		<button class="boton botonb" onclick="document.getElementById('harder2').play()">harder</button>
-		<botton class="boton botonb" onclick="document.getElementById('better2').play()">better</botton>
-		<botton class="boton botonb" onclick="document.getElementById('faster2').play()">faster</botton>
-		<botton class="boton botonb" onclick="document.getElementById('stronger2').play()">stronger</botton>
-	</div>
-	<div id="fila7" class="fila">
-		<button class="boton botonb" onclick="document.getElementById('more2').play()">more than</button>
-		<botton class="boton botonb" onclick="document.getElementById('hour2').play()">hour</botton>
-		<botton class="boton botonb" onclick="document.getElementById('our2').play()">our</botton>
-		<botton class="boton botonb" onclick="document.getElementById('never2').play()">never</botton>
-	</div>
-	<div id="fila8" class="fila">
-		<button class="boton botonb" onclick="document.getElementById('ever2').play()">ever</button>
-		<botton class="boton botonb" onclick="document.getElementById('after2').play()">after</botton>
-		<botton class="boton botonb" onclick="document.getElementById('workis2').play()">work is</botton>
-		<botton class="boton botonb" onclick="document.getElementById('over2').play()">over</botton>
-	</div>
+  <!-- Barra superior -->
+  <header id="top">
+    <div class="logo">
+      <b>iDAFT</b><small>// otra dimensión</small>
+    </div>
 
-<audio id="workit" src="sounds/1.wav"></audio>
-<audio id="makeit" src="sounds/2.wav"></audio>
-<audio id="doit" src="sounds/3.wav"></audio>
-<audio id="makeus" src="sounds/4.wav"></audio>
+    <div id="transport" class="glass">
+      <button id="base-restart" class="icon" title="Volver al inicio">⏮</button>
+      <button id="base-btn" class="icon loading" disabled title="Base (Espacio)">▶</button>
+      <div class="track">
+        <div class="track-bar"><div id="base-prog"></div></div>
+        <span id="base-time">0:00</span>
+      </div>
+      <div id="beats"><i></i><i></i><i></i><i></i></div>
+      <div class="bpm"><span id="bpm">123</span><small>BPM</small></div>
+    </div>
 
-<audio id="harder" src="sounds/5.wav"></audio>
-<audio id="faster" src="sounds/6.wav"></audio>
-<audio id="better" src="sounds/7.wav"></audio>
-<audio id="stronger" src="sounds/8.wav"></audio>
+    <div class="top-right">
+      <button id="keys-btn" class="icon on" title="Mostrar teclas">⌨</button>
+      <button id="help-btn" class="icon" title="Ayuda">?</button>
+      <button id="fs-btn" class="icon" title="Pantalla completa">⛶</button>
+    </div>
+  </header>
 
-<audio id="more" src="sounds/9.wav"></audio>
-<audio id="hour" src="sounds/10.wav"></audio>
-<audio id="our" src="sounds/11.wav"></audio>
-<audio id="never" src="sounds/12.wav"></audio>
+  <!-- Panel inferior -->
+  <footer id="panel" class="glass">
+    <button id="panel-toggle" title="Ocultar panel">▾</button>
+    <div class="group">
+      <label>FX</label>
+      <div class="ctl slider"><span>Filtro</span><input id="filter" type="range" min="0" max="1" step="0.001" value="1"></div>
+      <div class="ctl slider"><span>Velocidad</span><input id="speed" type="range" min="0.75" max="1.35" step="0.01" value="1"></div>
+      <button id="echo" class="tog" title="Eco (T)">Eco</button>
+      <button id="roll" class="tog" title="Roll: mantén el pad para repetir (o mantén Shift)">Roll</button>
+    </div>
+    <div class="group">
+      <label>Cuantizar</label>
+      <div id="quant" class="seg">
+        <button data-q="0" class="on">Libre</button><button data-q="1">1/4</button><button data-q="0.5">1/8</button><button data-q="0.25">1/16</button>
+      </div>
+    </div>
+    <div class="group">
+      <label>Looper <em id="loop-count">0</em></label>
+      <div class="row">
+        <button id="loop-rec" class="tog rec" title="Grabar capa (5)">●</button>
+        <button id="loop-play" class="tog" title="Reproducir / parar (6)">▶</button>
+        <button id="loop-undo" class="tog" title="Deshacer última capa">↶</button>
+        <button id="loop-clear" class="tog" title="Borrar">✕</button>
+        <div id="loop-bars" class="seg small">
+          <button data-bars="1">1</button><button data-bars="2" class="on">2</button><button data-bars="4">4</button>
+        </div>
+      </div>
+    </div>
+    <div class="group">
+      <label>Mezcla</label>
+      <div class="ctl slider"><span>Base</span><input id="vol-base" type="range" min="0" max="1.2" step="0.01" value="0.75"></div>
+      <div class="ctl slider"><span>Pads</span><input id="vol-pads" type="range" min="0" max="1.2" step="0.01" value="0.9"></div>
+    </div>
+    <div class="group actions">
+      <button id="rec-btn" class="big" title="Grabar mezcla y descargarla (G)"><i></i><span>Grabar</span></button>
+      <button id="reto-btn" class="big reto" disabled title="Juego de ritmo">🎯 <span>Reto</span></button>
+    </div>
+  </footer>
 
-<audio id="ever" src="sounds/13.wav"></audio>
-<audio id="after" src="sounds/14.wav"></audio>
-<audio id="workis" src="sounds/15.wav"></audio>
-<audio id="over" src="sounds/16.wav"></audio>
+  <!-- HUD del juego -->
+  <div id="game-hud">
+    <div id="hud-score">0</div>
+    <div id="hud-combo"></div>
+  </div>
 
-<!-- parte2 -->
+  <div id="toast"></div>
 
-<audio id="workit2" src="sounds/workit.wav"></audio>
-<audio id="makeit2" src="sounds/makeit.wav"></audio>
-<audio id="doit2" src="sounds/doit.wav"></audio>
-<audio id="makeus2" src="sounds/makeus.wav"></audio>
+  <!-- Intro -->
+  <section id="intro">
+    <div class="intro-box">
+      <h1>iDAFT</h1>
+      <p class="sub">launchpad de otra dimensión</p>
+      <div class="load"><div id="load-bar"></div></div>
+      <p id="load-text">Cargando samples…</p>
+      <button id="enter" disabled>Cargando…</button>
+      <p class="hint">Teclado, ratón o pantalla táctil · Pulsa <kbd>?</kbd> para ver los controles</p>
+    </div>
+  </section>
 
-<audio id="harder2" src="sounds/harder.wav"></audio>
-<audio id="faster2" src="sounds/faster.wav"></audio>
-<audio id="better2" src="sounds/better.wav"></audio>
-<audio id="stronger2" src="sounds/stronger.wav"></audio>
+  <!-- Ayuda -->
+  <section id="help" class="modal hidden">
+    <div class="modal-box glass">
+      <button id="help-close" class="icon close">✕</button>
+      <h2>Controles</h2>
+      <div class="help-cols">
+        <div><h3 class="a">Banco A</h3><div id="help-a" class="keys"></div></div>
+        <div><h3 class="b">Banco B</h3><div id="help-b" class="keys"></div></div>
+      </div>
+      <ul class="tips">
+        <li><kbd>Espacio</kbd> reproducir / pausar la base (arranca siempre a tempo, en el siguiente compás)</li>
+        <li><kbd>Shift</kbd> mantenlo mientras tocas un pad para hacer un <b>roll</b> (repetición a tempo). En móvil, activa <b>Roll</b>.</li>
+        <li><kbd>Y</kbd> cambiar cuantización · <kbd>T</kbd> eco · <kbd>G</kbd> grabar mezcla</li>
+        <li><kbd>5</kbd> grabar capa en el looper · <kbd>6</kbd> reproducir / parar el looper</li>
+        <li><b>Reto</b>: un juego de ritmo. Golpea cada pad justo cuando su anillo se cierre.</li>
+        <li>Doble clic en <b>Filtro</b> o <b>Velocidad</b> para restablecerlos.</li>
+      </ul>
+      <p class="classic">¿Nostalgia? <a href="clasico/">Versión clásica</a></p>
+    </div>
+  </section>
 
-<audio id="more2" src="sounds/morethan.wav"></audio>
-<audio id="hour2" src="sounds/hour.wav"></audio>
-<audio id="our2" src="sounds/our.wav"></audio>
-<audio id="never2" src="sounds/never.wav"></audio>
+  <!-- Resultados del reto -->
+  <section id="results" class="modal hidden">
+    <div class="modal-box glass results">
+      <div id="res-rank">S</div>
+      <div id="res-score">0</div>
+      <p id="res-detail"></p>
+      <p id="res-best"></p>
+      <div class="row center">
+        <button id="res-again" class="big reto">Otra vez</button>
+        <button id="res-close" class="big">Cerrar</button>
+      </div>
+    </div>
+  </section>
 
-<audio id="ever2" src="sounds/ever.wav"></audio>
-<audio id="after2" src="sounds/after.wav"></audio>
-<audio id="workis2" src="sounds/workis.wav"></audio>
-<audio id="over2" src="sounds/over.wav"></audio>
-
-<audio controls>
-	<source src="sounds/17base.mp3" type="audio/mpeg">
-</audio>
-
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
