@@ -1,0 +1,165 @@
+{
+ "pads": [
+  {
+   "label": "work it",
+   "file": "sounds/1.wav",
+   "bank": 0
+  },
+  {
+   "label": "make it",
+   "file": "sounds/2.wav",
+   "bank": 0
+  },
+  {
+   "label": "do it",
+   "file": "sounds/3.wav",
+   "bank": 0
+  },
+  {
+   "label": "make us",
+   "file": "sounds/4.wav",
+   "bank": 0
+  },
+  {
+   "label": "harder",
+   "file": "sounds/5.wav",
+   "bank": 0
+  },
+  {
+   "label": "better",
+   "file": "sounds/6.wav",
+   "bank": 0
+  },
+  {
+   "label": "faster",
+   "file": "sounds/7.wav",
+   "bank": 0
+  },
+  {
+   "label": "stronger",
+   "file": "sounds/8.wav",
+   "bank": 0
+  },
+  {
+   "label": "more than",
+   "file": "sounds/9.wav",
+   "bank": 0
+  },
+  {
+   "label": "hour",
+   "file": "sounds/10.wav",
+   "bank": 0
+  },
+  {
+   "label": "our",
+   "file": "sounds/11.wav",
+   "bank": 0
+  },
+  {
+   "label": "never",
+   "file": "sounds/12.wav",
+   "bank": 0
+  },
+  {
+   "label": "ever",
+   "file": "sounds/13.wav",
+   "bank": 0
+  },
+  {
+   "label": "after",
+   "file": "sounds/14.wav",
+   "bank": 0
+  },
+  {
+   "label": "work is",
+   "file": "sounds/15.wav",
+   "bank": 0
+  },
+  {
+   "label": "over",
+   "file": "sounds/16.wav",
+   "bank": 0
+  },
+  {
+   "label": "work it",
+   "file": "sounds/workit.wav",
+   "bank": 1
+  },
+  {
+   "label": "make it",
+   "file": "sounds/makeit.wav",
+   "bank": 1
+  },
+  {
+   "label": "do it",
+   "file": "sounds/doit.wav",
+   "bank": 1
+  },
+  {
+   "label": "make us",
+   "file": "sounds/makeus.wav",
+   "bank": 1
+  },
+  {
+   "label": "harder",
+   "file": "sounds/harder.wav",
+   "bank": 1
+  },
+  {
+   "label": "better",
+   "file": "sounds/better.wav",
+   "bank": 1
+  },
+  {
+   "label": "faster",
+   "file": "sounds/faster.wav",
+   "bank": 1
+  },
+  {
+   "label": "stronger",
+   "file": "sounds/stronger.wav",
+   "bank": 1
+  },
+  {
+   "label": "more than",
+   "file": "sounds/morethan.wav",
+   "bank": 1
+  },
+  {
+   "label": "hour",
+   "file": "sounds/hour.wav",
+   "bank": 1
+  },
+  {
+   "label": "our",
+   "file": "sounds/our.wav",
+   "bank": 1
+  },
+  {
+   "label": "never",
+   "file": "sounds/never.wav",
+   "bank": 1
+  },
+  {
+   "label": "ever",
+   "file": "sounds/ever.wav",
+   "bank": 1
+  },
+  {
+   "label": "after",
+   "file": "sounds/after.wav",
+   "bank": 1
+  },
+  {
+   "label": "work is",
+   "file": "sounds/workis.wav",
+   "bank": 1
+  },
+  {
+   "label": "over",
+   "file": "sounds/over.wav",
+   "bank": 1
+  }
+ ],
+ "base": "sounds/17base.mp3"
+}
